@@ -42,17 +42,33 @@ app.use(compression({
 }));
 app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 
-// CORS — allow all origins in development (covers localhost + tunnels like cloudflare/localtunnel)
-const corsOrigin = process.env.NODE_ENV === 'production'
-  ? [process.env.FRONTEND_URL].filter(Boolean)
-  : true; // true = reflect any Origin in dev
+// CORS — allow Netlify + localhost in production, all origins in dev
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  'https://meek-dolphin-5da6ea.netlify.app',
+  'http://localhost:5173',
+  'http://localhost:4173',
+].filter(Boolean);
 
 app.use(cors({
-  origin: corsOrigin,
+  origin: (origin, callback) => {
+    // Allow requests with no origin (mobile apps, curl, Render health checks)
+    if (!origin) return callback(null, true);
+    if (
+      process.env.NODE_ENV !== 'production' ||
+      allowedOrigins.includes(origin)
+    ) {
+      return callback(null, true);
+    }
+    callback(new Error(`CORS blocked: ${origin}`));
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
+
+// Handle preflight for all routes
+app.options('*', cors());
 
 // Body parsing
 app.use(express.json({ limit: '10mb' }));
