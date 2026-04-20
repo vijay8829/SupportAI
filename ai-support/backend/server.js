@@ -42,24 +42,18 @@ app.use(compression({
 }));
 app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 
-// CORS — allow Netlify + localhost in production, all origins in dev
-const allowedOrigins = [
-  process.env.FRONTEND_URL,
-  'https://meek-dolphin-5da6ea.netlify.app',
-  'http://localhost:5173',
-  'http://localhost:4173',
-].filter(Boolean);
-
+// CORS — allow any netlify.app subdomain + localhost + custom FRONTEND_URL
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow requests with no origin (mobile apps, curl, Render health checks)
+    // No origin = server-to-server / curl / Render health checks — always allow
     if (!origin) return callback(null, true);
-    if (
-      process.env.NODE_ENV !== 'production' ||
-      allowedOrigins.includes(origin)
-    ) {
-      return callback(null, true);
-    }
+    const allowed =
+      origin.endsWith('.netlify.app') ||       // any Netlify deploy URL
+      origin.endsWith('.onrender.com') ||       // Render preview URLs
+      origin.startsWith('http://localhost') ||  // local dev
+      origin === process.env.FRONTEND_URL;      // explicit override via env
+    if (allowed) return callback(null, true);
+    console.warn('[CORS] Blocked origin:', origin);
     callback(new Error(`CORS blocked: ${origin}`));
   },
   credentials: true,
@@ -67,7 +61,7 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
-// Handle preflight for all routes
+// Explicit preflight handler — must come before routes
 app.options('*', cors());
 
 // Body parsing
