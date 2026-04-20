@@ -1,0 +1,16 @@
+
+> ai-support-backend@1.0.0 dev
+> nodemon server.js
+
+[33m[nodemon] 3.1.14[39m
+[33m[nodemon] to restart at any time, enter `rs`[39m
+[33m[nodemon] watching path(s): src\**\* server.js[39m
+[33m[nodemon] watching extensions: js,json[39m
+[32m[nodemon] starting `node --max-old-space-size=512 server.js`[39m
+
+❌  Port 5000 is already in use.
+   Kill the existing process first:
+   Windows: netstat -ano | findstr :5000  then  taskkill /PID <pid> /F
+   macOS/Linux: lsof -ti:5000 | xargs kill -9
+
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m

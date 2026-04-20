@@ -1,0 +1,8 @@
+{
+  "watch": ["src", "server.js"],
+  "ext": "js,json",
+  "ignore": ["src/workers/**", "uploads/**"],
+  "execMap": {
+    "js": "node --max-old-space-size=512"
+  }
+}
